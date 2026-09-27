@@ -1,0 +1,12 @@
+{
+  "name": "sakura-temple",
+  "version": "1.0.0",
+  "description": "Interactive, fully procedural 3D Japanese temple garden built with Three.js",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "npx --yes http-server . -p 8080 -c-1 -o",
+    "serve": "npx --yes http-server . -p 8080 -c-1"
+  },
+  "license": "MIT"
+}

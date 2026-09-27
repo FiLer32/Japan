@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Sakura Temple Garden</title>
+  <meta name="description" content="An interactive, fully procedural Japanese temple complex rendered with Three.js." />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!--
+    No build step: three.js is resolved through an import map.
+    Pin the version so the addons match the core build.
+  -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- WebGL canvas is appended here -->
+  <div id="app"></div>
+
+  <!-- Loading screen (hidden once the scene has been generated) -->
+  <div id="loader" class="overlay">
+    <div class="loader-card">
+      <div class="loader-kanji" aria-hidden="true">寺</div>
+      <h1>Sakura Temple Garden</h1>
+      <div class="loader-bar"><div id="loader-progress"></div></div>
+      <p id="loader-status">Preparing…</p>
+    </div>
+  </div>
+
+  <!-- Fatal error / unsupported-browser screen -->
+  <div id="error" class="overlay hidden" role="alert">
+    <div class="loader-card error-card">
+      <div class="loader-kanji" aria-hidden="true">雨</div>
+      <h1 id="error-title">Something went wrong</h1>
+      <p id="error-message"></p>
+      <p class="error-hint" id="error-hint"></p>
+    </div>
+  </div>
+
+  <noscript>
+    <div class="overlay"><div class="loader-card"><h1>JavaScript required</h1>
+      <p>This 3D scene needs JavaScript and WebGL to run.</p></div></div>
+  </noscript>
+
+  <!--
+    Watchdog for browsers that cannot run ES modules / import maps at all:
+    if main.js never reports in, show a friendly message instead of a blank page.
+  -->
+  <script>
+    window.setTimeout(function () {
+      if (window.__templeBooted) return;
+      var el = document.getElementById('error');
+      document.getElementById('error-title').textContent = 'Unable to start';
+      document.getElementById('error-message').textContent =
+        'Your browser did not load the application modules. A modern browser with ES module and import-map support is required (Chrome 89+, Firefox 108+, Safari 16.4+).';
+      document.getElementById('loader').classList.add('hidden');
+      el.classList.remove('hidden');
+    }, 20000);
+  </script>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
