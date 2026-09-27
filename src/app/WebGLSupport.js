@@ -5,8 +5,11 @@
 export function detectWebGL() {
   const result = { ok: false, webgl2: false, reason: '', isMobile: false, maxTextureSize: 0 };
 
-  result.isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
-    || (navigator.maxTouchPoints > 1 && window.innerWidth < 1100);
+  // Only real phones/tablets: touch-screen laptops and narrow embedded frames
+  // must not be mistaken for mobile devices.
+  result.isMobile = navigator.userAgentData?.mobile === true
+    || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+    || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1 && !window.matchMedia('(pointer: fine)').matches);
 
   try {
     const canvas = document.createElement('canvas');

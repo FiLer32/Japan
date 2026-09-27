@@ -22,9 +22,10 @@ npm start            # npx http-server on http://localhost:8080
 python3 -m http.server 8080
 ```
 
-Add `?quality=low|medium|high` to the URL to override the automatic quality
-preset. Phones get `low`, 8+ core desktops get `high`, and everything else
-gets `medium`.
+Quality is picked automatically: desktops and laptops get `high`, phones
+and tablets get `low`. Change it with the **Quality** selector in the panel;
+the choice is remembered in this browser. You can also add
+`?quality=low|medium|high` or `#low` / `#medium` / `#high` to the URL.
 
 ## What's in the scene
 
@@ -134,8 +135,9 @@ src/
   culling), blossoms, petals, rocks, trees, shrubs, stepping stones and lily
   pads.
 * **LOD.** Grass chunks draw fewer blades with distance.
-* **Adaptive resolution.** If the frame rate drops, the pixel ratio and
-  grass density go down, and they recover when there's headroom.
+* **Adaptive resolution.** On HiDPI screens, if the frame rate stays low,
+  the extra supersampling is trimmed (never below native resolution) and
+  grass thins slightly. Both recover when there's headroom.
 * **Static architecture** is merged per material (`GeometryBatcher`), so a
   building is a handful of draw calls.
 * **Water passes.** The mirror and refraction passes run at reduced

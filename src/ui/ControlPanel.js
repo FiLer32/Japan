@@ -8,7 +8,7 @@
 const WEATHER_LABELS = { clear: 'Clear', rain: 'Rain', fog: 'Fog', auto: 'Auto' };
 
 export class ControlPanel {
-  constructor({ day, weather, onShadows, onBloom, onResetCamera, info }) {
+  constructor({ day, weather, onShadows, onBloom, onResetCamera, info, quality, onQuality }) {
     this.day = day;
     this.weather = weather;
     this.info = info;
@@ -53,6 +53,13 @@ export class ControlPanel {
 
         <div class="panel-section">
           <div class="panel-label"><span>Rendering</span><span class="stats" data-ref="stats"></span></div>
+          <label class="toggle">Quality
+            <select id="quality" data-ref="quality" aria-label="Graphics quality">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </label>
           <label class="toggle">Soft shadows <input type="checkbox" data-ref="shadows" checked /></label>
           <label class="toggle">Bloom glow <input type="checkbox" data-ref="bloom" checked /></label>
           <button data-act="camera" style="width:100%;margin-top:6px">Reset camera</button>
@@ -87,6 +94,8 @@ export class ControlPanel {
     });
     refs.time.addEventListener('change', () => { this._scrubbing = false; });
     refs.speed.addEventListener('change', () => { this.day.speed = Number(refs.speed.value); });
+    refs.quality.value = quality;
+    refs.quality.addEventListener('change', () => onQuality(refs.quality.value));
     refs.shadows.addEventListener('change', () => onShadows(refs.shadows.checked));
     refs.bloom.addEventListener('change', () => onBloom(refs.bloom.checked));
 
@@ -174,6 +183,6 @@ export class ControlPanel {
     this.refs.fogMeter.style.width = `${Math.round(w.fog * 100)}%`;
     this.refs.weatherState.textContent = this.weather.auto ? `auto · ${WEATHER_LABELS[this.weather.mode].toLowerCase()}` : '';
     const info = this.info();
-    this.refs.stats.textContent = `${Math.round(fps)} fps · ${info.calls} calls`;
+    this.refs.stats.textContent = `${Math.round(fps)} fps · ${Math.round(info.pr * 100)}% res`;
   }
 }

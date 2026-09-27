@@ -26,10 +26,26 @@ export const PRESETS = {
   },
 };
 
+const STORAGE_KEY = 'sakura-temple.quality';
+
+/** Remember a manual choice (used by the control panel). */
+export function saveQuality(name) {
+  try { localStorage.setItem(STORAGE_KEY, name); } catch { /* storage unavailable */ }
+}
+
+/**
+ * Priority: #low/#medium/#high in the URL, ?quality=, the choice saved from
+ * the control panel, then device detection (desktops get "high").
+ */
 export function pickQuality(support) {
+  const hash = location.hash.replace('#', '');
+  if (PRESETS[hash]) return { ...PRESETS[hash], source: 'manual' };
   const param = new URLSearchParams(location.search).get('quality');
-  if (param && PRESETS[param]) return { ...PRESETS[param] };
-  if (support.isMobile) return { ...PRESETS.low };
-  const cores = navigator.hardwareConcurrency || 4;
-  return { ...(cores >= 8 ? PRESETS.high : PRESETS.medium) };
+  if (param && PRESETS[param]) return { ...PRESETS[param], source: 'manual' };
+  let saved = null;
+  try { saved = localStorage.getItem(STORAGE_KEY); } catch { /* storage unavailable */ }
+  if (saved && PRESETS[saved]) return { ...PRESETS[saved], source: 'manual' };
+  if (support.isMobile) return { ...PRESETS.low, source: 'auto' };
+  const cores = navigator.hardwareConcurrency || 8;
+  return { ...(cores >= 4 ? PRESETS.high : PRESETS.medium), source: 'auto' };
 }

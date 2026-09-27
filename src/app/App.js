@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Renderer } from '../core/Renderer.js';
 import { CameraRig } from '../core/CameraRig.js';
-import { pickQuality } from './quality.js';
+import { pickQuality, saveQuality } from './quality.js';
 import { MaterialLibrary } from '../materials/MaterialLibrary.js';
 
 import { Sky } from '../atmosphere/Sky.js';
@@ -32,6 +32,8 @@ import { Birds } from '../life/Birds.js';
 import { Fireflies } from '../life/Fireflies.js';
 
 import { ControlPanel } from '../ui/ControlPanel.js';
+
+const PRESET_HASHES = ['#low', '#medium', '#high'];
 
 /**
  * APPLICATION
@@ -128,7 +130,14 @@ export class App {
           onShadows: (on) => this.gfx.setShadows(on, this.scene),
           onBloom: (on) => this.gfx.setBloom(on),
           onResetCamera: () => this.rig.reset(),
-          info: () => this._lastInfo || { calls: 0 },
+          info: () => ({ ...(this._lastInfo || { calls: 0 }), pr: this.renderer.getPixelRatio() }),
+          quality: this.quality.name,
+          onQuality: (name) => {
+            // Presets change instance counts and render targets: rebuild via reload.
+            saveQuality(name);
+            if (PRESET_HASHES.includes(location.hash)) location.hash = '';
+            location.reload();
+          },
         });
         window.addEventListener('resize', () => this._resize());
       }],
@@ -221,12 +230,15 @@ export class App {
     this._adaptTimer = 0;
     const r = this.renderer;
     const maxPR = Math.min(window.devicePixelRatio, this.quality.maxPixelRatio);
-    const minPR = Math.max(0.6, maxPR * 0.5);
+    // Only trim HiDPI supersampling; never render below 1 CSS pixel per pixel
+    // (that is what made the image look blurry / "mobile").
+    const minPR = Math.min(maxPR, Math.max(1, maxPR * 0.75));
     let pr = r.getPixelRatio();
-    if (this.fps < 38 && pr > minPR) pr = Math.max(minPR, pr - 0.15);
+    this._slow = this.fps < 32 ? (this._slow || 0) + 1 : 0;
+    if (this._slow >= 2 && pr > minPR) pr = Math.max(minPR, pr - 0.15);
     else if (this.fps > 57 && pr < maxPR) pr = Math.min(maxPR, pr + 0.1);
     else {
-      this.grass.lodScale = THREE.MathUtils.clamp(this.grass.lodScale + (this.fps < 38 ? -0.1 : this.fps > 55 ? 0.05 : 0), 0.4, 1);
+      this.grass.lodScale = THREE.MathUtils.clamp(this.grass.lodScale + (this._slow >= 2 ? -0.1 : this.fps > 50 ? 0.05 : 0), 0.7, 1);
       return;
     }
     r.setPixelRatio(pr);
